@@ -1,5 +1,6 @@
 import os
 import random
+import time
 
 import discord
 import socketio
@@ -83,27 +84,27 @@ def infoAutocomplete(self: discord.AutocompleteContext):
 async def info_command(interaction, terme: str):
     embed = discord.Embed(title=f"Infos sur le terme \"{terme}\"", description=helpPages[terme],
                           color=0x00ff00)
-    embed.add_field(name="Lien vers le SIS pour plus d'infos", value=lienHelpPages[terme])
+    embed.add_field(name="Lien vers plus d'infos sur le sujet", value=lienHelpPages[terme])
     await interaction.response.send_message(embed=embed)
 
 
 @bot.slash_command(name="signingame",
                    description="Vous fait apparaître / disparaître du jeu")
 async def signingame_command(interaction):
-    await sio.emit("toggle_user", {'id': interaction.user.id, 'name': interaction.user.name})
-
-    @sio.on('toggle_callback')
-    def callback_user(event, data):
-        response = data.response
-        embed = discord.Embed(
-            title=f"Vous vous êtes {'ajouté dans' if response else 'retiré de'} la liste des joueurs qui peuvent tomber dans le jeu",
-            color=0x00ff00)
-        await interaction.response.send_message(embed=embed, ephemeral=True)
-
+    # await sio.emit("toggle_user", {'id': interaction.user.id, 'name': interaction.user.name})
+    #
+    # @sio.on('toggle_callback')
+    # async def callback_user(sid, data):
+    #     response = data.response
+    response = random.random() > 0.5
+    embed = discord.Embed(
+        title=f"Vous vous êtes {'ajouté dans' if response else 'retiré de'} la liste des joueurs qui peuvent tomber dans le jeu",
+        color=0x00ff00)
+    await interaction.response.send_message(embed=embed, ephemeral=True)
 
 facts = [
     "On guérit du SIDA: FAUX,Même si des trithérapies performantes existent depuis 1996, on ne guérit toujours pas du SIDA. Les trithérapies permettent de \"mieux vivre\" avec le virus mais celui-ci reste toujours présent dans l'organisme. Une infection par le VIH s'évite en utilisant un moyen de prévention adapté à ses pratiques.",
-    "Le préservatif empêche seulement le risque de grossesse mais pas les IST Le préservatif est le SEUL moyen pour éviter la transmission des IST (Infection Sexuellement Transmissible). En effet, le préservatif permet d’éviter les contacts entre les muqueuses sexuelles et liquides sexuels des partenaires. Il évite que les spermatozoïdes remontent jusque dans l’utérus et ne puisse féconder un ovocyte et que des IST puissent se transmettre d’un partenaire à l’autre. Il est donc indispensable d’utiliser le préservatif dès le début des contacts sexuels car certaines IST se transmettent déjà lors des caresses sexuelles et non uniquement durant la pénétration!",
+    "La pilule empêche seulement le risque de grossesse mais pas les IST Le préservatif est le SEUL moyen pour éviter la transmission des IST (Infection Sexuellement Transmissible). En effet, le préservatif permet d’éviter les contacts entre les muqueuses sexuelles et liquides sexuels des partenaires. Il évite que les spermatozoïdes remontent jusque dans l’utérus et ne puisse féconder un ovocyte et que des IST puissent se transmettre d’un partenaire à l’autre. Il est donc indispensable d’utiliser le préservatif dès le début des contacts sexuels car certaines IST se transmettent déjà lors des caresses sexuelles et non uniquement durant la pénétration!",
 ]
 
 
@@ -118,23 +119,25 @@ async def fact_command(interaction):
     class FactView(discord.ui.View):
         @discord.ui.button(label="Je le savais déjà", style=discord.ButtonStyle.green, emoji="👍")
         async def button_callback_good(self, button, interaction_b):
-            await sio.emit("user_vote_fact", {"id": interaction_b.user.id, "fact": facts.index(fact), "vote": True})
-
-            @sio.on('vote_fact_callback')
-            def vote_fact_callback(event, data):
-                percent = data.percent
-                await interaction_b.response.send_message(
-                    f"Votre vote a été pris en compte, vous êtes {percent}% des votants à le savoir", ephemeral=True)
+            #
+            # await sio.emit("user_vote_fact", {"id": interaction_b.user.id, "fact": facts.index(fact), "upvote": True})
+            #
+            # @sio.on('vote_fact_callback')
+            # async def vote_fact_callback(sid, data):
+            #
+            percent = int(random.random()*100)
+            await interaction_b.response.send_message(
+                f"Votre vote a été pris en compte, vous êtes {percent}% des votants à le savoir", ephemeral=True)
 
         @discord.ui.button(label="Je le savais pas du tout", style=discord.ButtonStyle.red, emoji="👎")
         async def button_callback_bad(self, button, interaction_b):
-            await sio.emit("user_vote_fact", {"id": interaction_b.user.id, "fact": facts.index(fact), "vote": False})
-
-            @sio.on('vote_fact_callback')
-            def vote_fact_callback(event, data):
-                percent = data.percent
-                await interaction_b.response.send_message(
-                    f"Votre vote a été pris en compte, vous êtes {percent}% des votants à ne pas le savoir", ephemeral=True)
+            # await sio.emit("user_vote_fact", {"id": interaction_b.user.id, "fact": facts.index(fact), "upvote": False})
+            #
+            # @sio.on('vote_fact_callback')
+            # async def vote_fact_callback(sid, data):
+            percent = int(random.random() * 100)
+            await interaction_b.response.send_message(
+                f"Votre vote a été pris en compte, vous êtes {percent}% des votants à ne pas le savoir", ephemeral=True)
 
     await interaction.response.send_message(embed=embed, view=FactView())
 
